@@ -1,0 +1,15 @@
+{
+  "name": "@baytalmoswer/design-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Design Tokens مستخرجة من البراند بوك الرسمي (Rebranding, April 2023) — مرجع وحيد",
+  "main": "tokens.json",
+  "exports": {
+    ".": "./tokens.json",
+    "./css": "./tokens.css"
+  },
+  "files": [
+    "tokens.json",
+    "tokens.css"
+  ]
+}

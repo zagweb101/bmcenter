@@ -1,0 +1,37 @@
+/* ============================================================
+ * Bayt Almoswer — Brand Design Tokens
+ * Source: PRD 4.0 §7.10 — Brand Book (Rebranding, April 2023)
+ * Single source of truth. Do not edit values without an ADR.
+ * Semantic colors are intentionally omitted until they pass
+ * WCAG 2.2 AA contrast (PRD §7.6 / Appendix B.6).
+ * ============================================================ */
+:root {
+  /* Primary brand colors (§7.3) */
+  --brand-red: #BE1622;
+  --brand-blue: #1319B4;
+  --brand-purple: #590159;
+  --brand-navy: #010A2D;
+
+  /* Secondary brand colors (§7.4) */
+  --brand-rose: #861755;
+  --brand-cyan: #81FFFE;
+  --brand-magenta: #FB42FD;
+  --brand-indigo: #414593;
+
+  /* Surfaces (§7.10) */
+  --surface-app: #FFFFFF;
+  --surface-sidebar: #010A2D;
+  --surface-elevated: #F5F6FA;
+
+  /* Brand gradient (§7.5) — Hero/covers/Premium only.
+     Never behind tables, forms, dashboards, or long text. */
+  --gradient-brand: linear-gradient(135deg, #1319B4, #590159, #BE1622, #FB42FD);
+
+  /* Typography (§7.8) */
+  --font-ar: "IBM Plex Sans Arabic", sans-serif;
+  --font-en: "Source", sans-serif;
+
+  /* Shape & direction (§7.10) */
+  --radius-card: 12px;
+  --direction: rtl;
+}

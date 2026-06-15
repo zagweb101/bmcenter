@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+vendor/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+storybook-static/
+
+# Environment & secrets — NEVER commit (PRD §6, §16.4, §22)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+storage/zatca/*.key
+
+# Laravel
+/services/core-api/vendor/
+/services/core-api/storage/*.key
+/services/core-api/storage/logs/*
+/services/core-api/storage/framework/cache/*
+/services/core-api/storage/framework/sessions/*
+/services/core-api/storage/framework/views/*
+/services/core-api/bootstrap/cache/*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing & coverage
+coverage/
+.nyc_output/
+.phpunit.result.cache
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Turborepo / caches
+.turbo/
+.cache/
