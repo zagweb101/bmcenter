@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(mkdir -p apps/core-admin apps/public-portal services/core-api packages/brand packages/design-tokens packages/ui packages/api-client packages/auth packages/compliance packages/validation packages/analytics packages/config skills docs/product docs/architecture/decisions docs/compliance docs/security docs/design docs/operations infrastructure scripts tests)",
-      "Bash(git init *)",
-      "Bash(git symbolic-ref *)"
-    ]
-  }
-}
