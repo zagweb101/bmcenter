@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('contact_methods', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('person_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('person_id')->constrained('persons')->cascadeOnDelete();
 
             $table->string('type', 16);                 // phone | whatsapp | email | other
             $table->string('value');                    // العرض الأصلي

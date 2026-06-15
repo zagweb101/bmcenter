@@ -31,7 +31,7 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
 
             $table->index(['organization_id', 'action']);
-            $table->index(['subject_type', 'subject_id']);
+            // فهرس (subject_type, subject_id) يُنشأ تلقائيًا عبر nullableMorphs أعلاه
         });
     }
 

@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('privacy_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('person_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('person_id')->nullable()->constrained('persons')->nullOnDelete();
 
             $table->string('type', 32);                 // access | copy | rectify | erase | withdraw_consent | inform
             $table->string('status', 24)->default('received'); // received | verifying | in_progress | fulfilled | rejected

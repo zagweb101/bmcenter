@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->after('organization_id')
                   ->constrained()->nullOnDelete();
             $table->foreignId('person_id')->nullable()->after('branch_id')
-                  ->constrained()->nullOnDelete();
+                  ->constrained('persons')->nullOnDelete();
 
             $table->boolean('is_active')->default(true)->after('password');
             $table->boolean('mfa_enabled')->default(false)->after('is_active'); // §22 MFA

@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('consents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('person_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('person_id')->constrained('persons')->cascadeOnDelete();
 
             $table->string('purpose', 32);          // privacy | marketing | whatsapp | media_publishing | community
             $table->string('text_version');         // إصدار نص الموافقة المعروض

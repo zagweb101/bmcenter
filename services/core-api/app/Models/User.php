@@ -5,6 +5,8 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -22,6 +24,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'organization_id',
+        'branch_id',
+        'person_id',
+        'is_active',
+        'mfa_enabled',
     ];
 
     /**
@@ -43,7 +50,40 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'mfa_enabled' => 'boolean',
         ];
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class)->withPivot('branch_id');
+    }
+
+    /**
+     * فحص صلاحية مفروض على الخادم (PRD §6, §22) عبر أدوار المستخدم.
+     */
+    public function hasPermission(string $permissionKey): bool
+    {
+        return $this->roles()
+            ->whereHas('permissions', fn ($q) => $q->where('key', $permissionKey))
+            ->exists();
     }
 }
