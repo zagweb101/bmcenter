@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +15,7 @@ use Illuminate\Support\Str;
  */
 class Invoice extends Model
 {
-    use BelongsToOrganization;
+    use BelongsToOrganization, Auditable;
 
     // الحالات غير القابلة للتعديل (صادرة فعليًا) — PRD §16.5, §17.
     public const ISSUED_STATES = [

@@ -26,5 +26,9 @@ Route::prefix('v1')->group(function () {
             ->middleware('permission:persons.view');
         Route::post('persons', [PersonController::class, 'store'])
             ->middleware('permission:persons.manage');
+        Route::get('persons/{person}/activity', [PersonController::class, 'activity'])
+            ->middleware('permission:audit.view');
+        Route::get('persons/{person}/national-id', [PersonController::class, 'revealNationalId'])
+            ->middleware('permission:persons.viewSensitive');
     });
 });

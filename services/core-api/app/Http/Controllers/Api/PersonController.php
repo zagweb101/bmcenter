@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePersonRequest;
+use App\Http\Resources\AuditLogResource;
 use App\Http\Resources\PersonResource;
+use App\Models\AuditLog;
 use App\Models\Person;
+use App\Services\Audit\AuditLogger;
 use App\Services\Person\PersonMatcher;
 use App\Support\Contact\ContactNormalizer;
 use Illuminate\Http\JsonResponse;
@@ -65,5 +68,32 @@ class PersonController extends Controller
     {
         // ربط النموذج يطبّق OrganizationScope تلقائيًا → 404 عبر المؤسسات.
         return new PersonResource($person);
+    }
+
+    /**
+     * Activity Timeline — سجل تدقيق الشخص. PRD §8.1 (gated audit.view).
+     */
+    public function activity(Person $person): AnonymousResourceCollection
+    {
+        $logs = AuditLog::query()
+            ->where('subject_type', $person->getMorphClass())
+            ->where('subject_id', $person->getKey())
+            ->latest()
+            ->paginate(30);
+
+        return AuditLogResource::collection($logs);
+    }
+
+    /**
+     * كشف الهوية الوطنية — وصول لبيانات حساسة يُسجَّل دائمًا. PRD §11 (gated persons.viewSensitive).
+     */
+    public function revealNationalId(Person $person, AuditLogger $audit): JsonResponse
+    {
+        $audit->logSensitiveAccess($person, ['national_id']);
+
+        return response()->json([
+            'person_id' => $person->id,
+            'national_id' => $person->national_id_encrypted, // يُفك تشفيره عبر الـ cast
+        ]);
     }
 }
