@@ -19,10 +19,14 @@ class SetTenant
 
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        // يُحلّ المستخدم عبر حارس sanctum (التوكن) — يعمل قبل auth:sanctum وقبل ربط النماذج.
+        $user = $request->user() ?? auth('sanctum')->user();
 
+        // يُضبط دائمًا (set أو forget) لمنع تسرّب سياق مؤسسة من طلب سابق (Octane/الاختبارات).
         if ($user && $user->organization_id) {
             $this->tenancy->set((int) $user->organization_id);
+        } else {
+            $this->tenancy->forget();
         }
 
         return $next($request);

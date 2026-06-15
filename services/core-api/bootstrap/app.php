@@ -14,9 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // PRD §12 / §22 — يُستخدمان بعد auth:sanctum في المسارات المحمية
+        // PRD §12, ADR-003 — يضبط سياق المؤسسة مبكرًا، قبل ربط النماذج (SubstituteBindings)
+        // ليُطبَّق OrganizationScope على الـ route-model binding بشكل صحيح.
+        $middleware->api(prepend: [SetTenant::class]);
+
+        // PRD §22 — يُفرض على المسارات المحمية
         $middleware->alias([
-            'tenant' => SetTenant::class,
             'permission' => EnsurePermission::class,
         ]);
     })
