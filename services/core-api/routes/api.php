@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
+use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PrivacyRequestController;
@@ -76,6 +77,11 @@ Route::prefix('v1')->group(function () {
         Route::post('enrollments', [EnrollmentController::class, 'store'])->middleware('permission:enrollments.manage');
         Route::patch('enrollments/{enrollment}/cancel', [EnrollmentController::class, 'cancel'])->middleware('permission:enrollments.manage');
         Route::post('enrollments/{enrollment}/transfer', [EnrollmentController::class, 'transfer'])->middleware('permission:enrollments.manage');
+
+        // الفواتير (Invoices) — PRD §8.3, §16
+        Route::get('invoices', [InvoiceController::class, 'index'])->middleware('permission:invoices.view');
+        Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->middleware('permission:invoices.view');
+        Route::post('enrollments/{enrollment}/invoice', [InvoiceController::class, 'storeFromEnrollment'])->middleware('permission:invoices.issue');
 
         // اعتماد الطلبات (Approvals) — PRD §15
         Route::middleware('permission:approvals.review')->group(function () {

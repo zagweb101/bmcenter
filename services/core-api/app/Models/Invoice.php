@@ -23,7 +23,7 @@ class Invoice extends Model
     ];
 
     protected $fillable = [
-        'organization_id', 'branch_id', 'egs_unit_id', 'buyer_person_id',
+        'organization_id', 'branch_id', 'egs_unit_id', 'buyer_person_id', 'enrollment_id',
         'uuid', 'document_number', 'invoice_type_code', 'transaction_type',
         'original_invoice_id', 'seller_snapshot', 'buyer_snapshot', 'currency',
         'issued_at', 'subtotal', 'discount_total', 'tax_total',
