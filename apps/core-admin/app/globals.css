@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/*
+ * Design Tokens — البراند بوك الرسمي (PRD §7.10).
+ * مصدر القيم: packages/design-tokens. لا تُعدَّل دون ADR.
+ */
+@theme {
+  /* ألوان العلامة الأساسية (§7.3) */
+  --color-brand-red: #be1622;
+  --color-brand-blue: #1319b4;
+  --color-brand-purple: #590159;
+  --color-brand-navy: #010a2d;
+
+  /* ألوان ثانوية (§7.4) */
+  --color-brand-rose: #861755;
+  --color-brand-cyan: #81fffe;
+  --color-brand-magenta: #fb42fd;
+  --color-brand-indigo: #414593;
+
+  /* الأسطح (§7.10) */
+  --color-surface-app: #ffffff;
+  --color-surface-sidebar: #010a2d;
+  --color-surface-elevated: #f5f6fa;
+
+  /* الخطوط (§7.8) — RTL أولًا */
+  --font-sans: var(--font-ar), var(--font-en), sans-serif;
+
+  /* نصف القطر (§7.10) */
+  --radius-card: 12px;
+}
+
+/* التدرّج الرئيسي (§7.5) — Hero/أغلفة/Premium فقط، لا خلف الجداول/النماذج. */
+:root {
+  --gradient-brand: linear-gradient(135deg, #1319b4, #590159, #be1622, #fb42fd);
+}
+
+body {
+  font-family: var(--font-sans);
+}
