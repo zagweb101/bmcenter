@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\LeadController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PrivacyRequestController;
 use Illuminate\Support\Facades\Route;
@@ -81,7 +82,13 @@ Route::prefix('v1')->group(function () {
         // الفواتير (Invoices) — PRD §8.3, §16
         Route::get('invoices', [InvoiceController::class, 'index'])->middleware('permission:invoices.view');
         Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->middleware('permission:invoices.view');
+        Route::get('invoices/{invoice}/balance', [InvoiceController::class, 'balance'])->middleware('permission:invoices.view');
         Route::post('enrollments/{enrollment}/invoice', [InvoiceController::class, 'storeFromEnrollment'])->middleware('permission:invoices.issue');
+
+        // المدفوعات والسندات (Payments / Receipts) — PRD §17, §18
+        Route::get('payments', [PaymentController::class, 'index'])->middleware('permission:payments.view');
+        Route::get('payments/{payment}', [PaymentController::class, 'show'])->middleware('permission:payments.view');
+        Route::post('payments', [PaymentController::class, 'store'])->middleware('permission:payments.manage');
 
         // اعتماد الطلبات (Approvals) — PRD §15
         Route::middleware('permission:approvals.review')->group(function () {

@@ -60,8 +60,25 @@ class Invoice extends Model
         return $this->belongsTo(Person::class, 'buyer_person_id');
     }
 
+    public function allocations(): HasMany
+    {
+        return $this->hasMany(PaymentAllocation::class);
+    }
+
     public function isIssued(): bool
     {
         return in_array($this->status, self::ISSUED_STATES, true);
+    }
+
+    /** المبلغ المخصَّص (المدفوع) لهذه الفاتورة. */
+    public function allocatedTotal(): string
+    {
+        return bcadd((string) $this->allocations()->sum('amount'), '0', 2);
+    }
+
+    /** الرصيد المتبقّي = الإجمالي − المخصَّص. PRD §17. */
+    public function outstanding(): string
+    {
+        return bcsub((string) $this->total_including_tax, $this->allocatedTotal(), 2);
     }
 }

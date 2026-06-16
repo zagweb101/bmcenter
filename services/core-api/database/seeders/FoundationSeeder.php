@@ -41,6 +41,8 @@ class FoundationSeeder extends Seeder
             ['key' => 'audit.view',       'name_ar' => 'عرض سجل التدقيق',    'group' => 'compliance'],
             ['key' => 'invoices.view',    'name_ar' => 'عرض الفواتير',       'group' => 'finance'],
             ['key' => 'invoices.issue',   'name_ar' => 'إصدار الفواتير',     'group' => 'finance'],
+            ['key' => 'payments.view',    'name_ar' => 'عرض المدفوعات',      'group' => 'finance'],
+            ['key' => 'payments.manage',  'name_ar' => 'تسجيل المدفوعات',    'group' => 'finance'],
             // CRM / Leads (PRD §13)
             ['key' => 'leads.view',       'name_ar' => 'عرض العملاء المحتملين', 'group' => 'crm'],
             ['key' => 'leads.manage',     'name_ar' => 'إدارة العملاء المحتملين', 'group' => 'crm'],
@@ -64,7 +66,7 @@ class FoundationSeeder extends Seeder
             'branch_manager'      => ['ar' => 'مدير الفرع',           'limit' => '1000.00', 'perms' => ['persons.view', 'persons.manage', 'invoices.view', 'leads.view', 'leads.manage', 'leads.assign', 'courses.view', 'courses.manage', 'enrollments.view', 'enrollments.manage', 'approvals.review']],
             'crm_agent'           => ['ar' => 'موظف علاقات العملاء',  'limit' => '0.00', 'perms' => ['persons.view', 'persons.manage', 'consents.manage', 'leads.view', 'leads.manage', 'courses.view']],
             'registration_officer'=> ['ar' => 'موظف التسجيل',         'limit' => '200.00', 'perms' => ['persons.view', 'persons.manage', 'courses.view', 'enrollments.view', 'enrollments.manage']],
-            'accountant'          => ['ar' => 'المحاسب',              'limit' => '0.00', 'perms' => ['invoices.view', 'invoices.issue']],
+            'accountant'          => ['ar' => 'المحاسب',              'limit' => '0.00', 'perms' => ['invoices.view', 'invoices.issue', 'payments.view', 'payments.manage', 'enrollments.view']],
             'compliance_reviewer' => ['ar' => 'مراجع الامتثال',       'limit' => '0.00', 'perms' => ['audit.view', 'privacy.handle', 'consents.manage', 'persons.viewSensitive']],
         ];
 

@@ -33,6 +33,19 @@ class InvoiceController extends Controller
     }
 
     /**
+     * رصيد الفاتورة المتبقّي. PRD §17.
+     */
+    public function balance(Invoice $invoice): JsonResponse
+    {
+        return response()->json([
+            'invoice_id' => $invoice->id,
+            'total_including_tax' => $invoice->total_including_tax,
+            'allocated' => $invoice->allocatedTotal(),
+            'outstanding' => $invoice->outstanding(),
+        ]);
+    }
+
+    /**
      * توليد فاتورة Draft من تسجيل. PRD §8.3.
      */
     public function storeFromEnrollment(Enrollment $enrollment, InvoiceService $service): JsonResponse
