@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Lead;
 use App\Models\LeadSource;
 use App\Models\Organization;
+use App\Models\Person;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\CreatesTenants;
@@ -103,6 +104,47 @@ class LeadTest extends TestCase
 
         Sanctum::actingAs($userA);
         $this->getJson("/api/v1/leads/{$leadB->id}")->assertNotFound();
+    }
+
+    public function test_convert_creates_and_links_new_person(): void
+    {
+        [$org, $user] = $this->makeTenant(['leads.view', 'leads.manage']);
+        $source = $this->makeSource($org);
+        $lead = $this->withinTenant($org, fn () => Lead::create([
+            'organization_id' => $org->id, 'full_name' => 'ماجد جديد',
+            'phone_e164' => '+966500001111', 'lead_source_id' => $source->id,
+        ]));
+
+        Sanctum::actingAs($user);
+        $this->postJson("/api/v1/leads/{$lead->id}/convert")
+            ->assertCreated()
+            ->assertJsonPath('matched', false);
+
+        $this->assertNotNull($lead->fresh()->person_id);
+    }
+
+    public function test_convert_links_to_existing_matching_person(): void
+    {
+        [$org, $user] = $this->makeTenant(['leads.view', 'leads.manage']);
+        $source = $this->makeSource($org);
+
+        $person = $this->withinTenant($org, fn () => Person::create([
+            'organization_id' => $org->id, 'first_name' => 'قائم', 'phone_e164' => '+966500002222',
+        ]));
+        $lead = $this->withinTenant($org, fn () => Lead::create([
+            'organization_id' => $org->id, 'full_name' => 'نفس الرقم',
+            'phone_e164' => '+966500002222', 'lead_source_id' => $source->id,
+        ]));
+
+        Sanctum::actingAs($user);
+        $this->postJson("/api/v1/leads/{$lead->id}/convert")
+            ->assertOk()
+            ->assertJsonPath('matched', true)
+            ->assertJsonPath('person.id', $person->id);
+
+        // لم يُنشأ شخص مكرر
+        $this->assertSame(1, Person::withoutGlobalScopes()->where('organization_id', $org->id)->count());
+        $this->assertSame($person->id, $lead->fresh()->person_id);
     }
 
     public function test_assign_sets_owner_and_advances_stage(): void

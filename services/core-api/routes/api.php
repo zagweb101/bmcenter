@@ -60,6 +60,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('leads/{lead}/transition', [LeadController::class, 'transition'])->middleware('permission:leads.manage');
         Route::post('leads/{lead}/interactions', [LeadController::class, 'addInteraction'])->middleware('permission:leads.manage');
         Route::patch('leads/{lead}/assign', [LeadController::class, 'assign'])->middleware('permission:leads.assign');
+        Route::post('leads/{lead}/convert', [LeadController::class, 'convert'])->middleware('permission:leads.manage');
 
         // الدورات والمجموعات (Courses / Cohorts) — PRD §14
         Route::get('courses', [CourseController::class, 'index'])->middleware('permission:courses.view');

@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLeadRequest;
 use App\Http\Requests\TransitionLeadRequest;
 use App\Http\Resources\LeadResource;
+use App\Http\Resources\PersonResource;
 use App\Models\Lead;
 use App\Models\LeadInteraction;
 use App\Models\LeadSource;
+use App\Models\Person;
 use App\Models\User;
+use App\Services\Person\PersonMatcher;
 use App\Support\Contact\ContactNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -127,6 +130,52 @@ class LeadController extends Controller
         ]);
 
         return response()->json(['message' => 'تم تسجيل التفاعل.'], 201);
+    }
+
+    /**
+     * تحويل Lead إلى Person (Person Match). PRD §11, §8.2.
+     * يربط بشخص مطابق تمامًا إن وُجد (منع التكرار)، وإلا يُنشئ شخصًا جديدًا.
+     */
+    public function convert(Lead $lead, PersonMatcher $matcher): JsonResponse
+    {
+        if ($lead->person_id) {
+            return response()->json([
+                'message' => 'العميل مرتبط بشخص بالفعل.',
+                'person' => new PersonResource($lead->person),
+                'matched' => true,
+            ]);
+        }
+
+        $existing = $matcher->findExact([
+            'phone' => $lead->phone_e164,
+            'email' => $lead->email,
+        ]);
+
+        if ($existing) {
+            $lead->update(['person_id' => $existing->id]);
+
+            return response()->json([
+                'message' => 'تم الربط بشخص مطابق (منع التكرار).',
+                'person' => new PersonResource($existing),
+                'matched' => true,
+            ]);
+        }
+
+        $person = Person::create([
+            'first_name' => $lead->full_name ?: 'غير مسمّى',
+            'full_name' => $lead->full_name,
+            'phone_e164' => $lead->phone_e164,
+            'country_code' => $lead->phone_e164 ? substr($lead->phone_e164, 0, 4) : null,
+            'email' => $lead->email,
+        ]);
+
+        $lead->update(['person_id' => $person->id]);
+
+        return response()->json([
+            'message' => 'تم إنشاء شخص جديد وربطه.',
+            'person' => new PersonResource($person),
+            'matched' => false,
+        ], 201);
     }
 
     /**
