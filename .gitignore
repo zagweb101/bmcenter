@@ -31,6 +31,11 @@ storage/zatca/*.key
 /services/core-api/storage/framework/views/*
 /services/core-api/bootstrap/cache/*
 
+# Database backups (never commit dumps)
+storage/backups/
+*.dump
+*.sql.gz
+
 # Logs
 *.log
 npm-debug.log*
