@@ -45,6 +45,11 @@ class FoundationSeeder extends Seeder
             ['key' => 'leads.view',       'name_ar' => 'عرض العملاء المحتملين', 'group' => 'crm'],
             ['key' => 'leads.manage',     'name_ar' => 'إدارة العملاء المحتملين', 'group' => 'crm'],
             ['key' => 'leads.assign',     'name_ar' => 'إسناد العملاء المحتملين', 'group' => 'crm'],
+            // الدورات والتسجيل (PRD §14)
+            ['key' => 'courses.view',       'name_ar' => 'عرض الدورات',       'group' => 'training'],
+            ['key' => 'courses.manage',     'name_ar' => 'إدارة الدورات والمجموعات', 'group' => 'training'],
+            ['key' => 'enrollments.view',   'name_ar' => 'عرض التسجيلات',     'group' => 'training'],
+            ['key' => 'enrollments.manage', 'name_ar' => 'إدارة التسجيلات',   'group' => 'training'],
         ];
 
         foreach ($permissions as $p) {
@@ -54,10 +59,10 @@ class FoundationSeeder extends Seeder
         // الأدوار السبعة (PRD §10) مع صلاحياتها الأولية
         $roles = [
             'super_admin'         => ['ar' => 'مدير النظام',          'perms' => '*'],
-            'executive_manager'   => ['ar' => 'المدير التنفيذي',      'perms' => ['persons.view', 'users.manage', 'settings.manage', 'audit.view', 'invoices.view', 'leads.view']],
-            'branch_manager'      => ['ar' => 'مدير الفرع',           'perms' => ['persons.view', 'persons.manage', 'invoices.view', 'leads.view', 'leads.manage', 'leads.assign']],
-            'crm_agent'           => ['ar' => 'موظف علاقات العملاء',  'perms' => ['persons.view', 'persons.manage', 'consents.manage', 'leads.view', 'leads.manage']],
-            'registration_officer'=> ['ar' => 'موظف التسجيل',         'perms' => ['persons.view', 'persons.manage']],
+            'executive_manager'   => ['ar' => 'المدير التنفيذي',      'perms' => ['persons.view', 'users.manage', 'settings.manage', 'audit.view', 'invoices.view', 'leads.view', 'courses.view', 'enrollments.view']],
+            'branch_manager'      => ['ar' => 'مدير الفرع',           'perms' => ['persons.view', 'persons.manage', 'invoices.view', 'leads.view', 'leads.manage', 'leads.assign', 'courses.view', 'courses.manage', 'enrollments.view', 'enrollments.manage']],
+            'crm_agent'           => ['ar' => 'موظف علاقات العملاء',  'perms' => ['persons.view', 'persons.manage', 'consents.manage', 'leads.view', 'leads.manage', 'courses.view']],
+            'registration_officer'=> ['ar' => 'موظف التسجيل',         'perms' => ['persons.view', 'persons.manage', 'courses.view', 'enrollments.view', 'enrollments.manage']],
             'accountant'          => ['ar' => 'المحاسب',              'perms' => ['invoices.view', 'invoices.issue']],
             'compliance_reviewer' => ['ar' => 'مراجع الامتثال',       'perms' => ['audit.view', 'privacy.handle', 'consents.manage', 'persons.viewSensitive']],
         ];

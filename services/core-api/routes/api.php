@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\ConsentController;
+use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PrivacyRequestController;
@@ -56,5 +59,17 @@ Route::prefix('v1')->group(function () {
         Route::patch('leads/{lead}/transition', [LeadController::class, 'transition'])->middleware('permission:leads.manage');
         Route::post('leads/{lead}/interactions', [LeadController::class, 'addInteraction'])->middleware('permission:leads.manage');
         Route::patch('leads/{lead}/assign', [LeadController::class, 'assign'])->middleware('permission:leads.assign');
+
+        // الدورات والمجموعات (Courses / Cohorts) — PRD §14
+        Route::get('courses', [CourseController::class, 'index'])->middleware('permission:courses.view');
+        Route::post('courses', [CourseController::class, 'store'])->middleware('permission:courses.manage');
+        Route::get('cohorts', [CohortController::class, 'index'])->middleware('permission:courses.view');
+        Route::post('cohorts', [CohortController::class, 'store'])->middleware('permission:courses.manage');
+
+        // التسجيل (Enrollment) — PRD §14, §15
+        Route::get('enrollments', [EnrollmentController::class, 'index'])->middleware('permission:enrollments.view');
+        Route::get('enrollments/{enrollment}', [EnrollmentController::class, 'show'])->middleware('permission:enrollments.view');
+        Route::post('enrollments', [EnrollmentController::class, 'store'])->middleware('permission:enrollments.manage');
+        Route::patch('enrollments/{enrollment}/cancel', [EnrollmentController::class, 'cancel'])->middleware('permission:enrollments.manage');
     });
 });
