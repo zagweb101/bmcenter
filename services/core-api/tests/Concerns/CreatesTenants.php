@@ -20,7 +20,7 @@ trait CreatesTenants
      *
      * @return array{0: Organization, 1: User}
      */
-    protected function makeTenant(array $permissionKeys = ['persons.view', 'persons.manage']): array
+    protected function makeTenant(array $permissionKeys = ['persons.view', 'persons.manage'], ?string $discountLimit = null): array
     {
         $org = Organization::create([
             'name_ar' => 'مؤسسة ' . Str::random(4),
@@ -41,6 +41,7 @@ trait CreatesTenants
             'key' => 'role_' . Str::random(5),
             'name_ar' => 'دور اختبار',
             'is_system' => false,
+            'max_discount_amount' => $discountLimit, // null = غير محدود (PRD §15)
         ]);
         $role->permissions()->sync($permissions->pluck('id')->all());
 

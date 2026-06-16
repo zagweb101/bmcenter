@@ -2,9 +2,11 @@
 
 namespace App\Services\Enrollment;
 
+use App\Models\ApprovalRequest;
 use App\Models\Cohort;
 use App\Models\Enrollment;
 use App\Models\Person;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -16,9 +18,14 @@ use Illuminate\Validation\ValidationException;
  */
 class EnrollmentService
 {
-    public function enroll(Cohort $cohort, Person $person, float|string $discount = 0, ?string $discountReason = null): Enrollment
-    {
-        return DB::transaction(function () use ($cohort, $person, $discount, $discountReason) {
+    public function enroll(
+        Cohort $cohort,
+        Person $person,
+        float|string $discount = 0,
+        ?string $discountReason = null,
+        ?User $actingUser = null,
+    ): Enrollment {
+        return DB::transaction(function () use ($cohort, $person, $discount, $discountReason, $actingUser) {
             // قفل صف المجموعة لتسلسل قرارات السعة المتزامنة.
             $locked = Cohort::whereKey($cohort->getKey())->lockForUpdate()->firstOrFail();
 
@@ -36,13 +43,29 @@ class EnrollmentService
             $occupied = Enrollment::where('cohort_id', $locked->id)
                 ->whereIn('status', Enrollment::SEAT_OCCUPYING)
                 ->count();
-
             $hasSeat = $locked->capacity === 0 || $occupied < $locked->capacity;
-            $status = $hasSeat ? 'pending_invoice' : 'waitlisted';
 
-            $snapshot = $this->computeSnapshot((string) $locked->price, (string) $locked->tax_rate, (string) $discount);
+            // بوابة اعتماد الخصم (PRD §15): ما يتجاوز حد الدور لا يُطبَّق قبل الاعتماد.
+            $requested = bcadd((string) $discount, '0', 2);
+            $limit = $actingUser?->maxDiscountLimit(); // null = غير محدود
+            $needsApproval = bccomp($requested, '0', 2) === 1
+                && $limit !== null
+                && bccomp($requested, $limit, 2) === 1;
 
-            return Enrollment::create([
+            // الخصم المطبَّق فعليًا: صفر إن كان يحتاج اعتمادًا (يُطبَّق لاحقًا عند الموافقة).
+            $appliedDiscount = $needsApproval ? '0' : $requested;
+
+            if (! $hasSeat) {
+                $status = 'waitlisted';
+            } elseif ($needsApproval) {
+                $status = 'pending_approval';
+            } else {
+                $status = 'pending_invoice';
+            }
+
+            $snapshot = $this->computeSnapshot((string) $locked->price, (string) $locked->tax_rate, $appliedDiscount);
+
+            $enrollment = Enrollment::create([
                 'organization_id' => $locked->organization_id,
                 'cohort_id' => $locked->id,
                 'person_id' => $person->id,
@@ -52,10 +75,47 @@ class EnrollmentService
                 'discount_amount_snapshot' => $snapshot['discount'],
                 'tax_amount_snapshot' => $snapshot['tax'],
                 'total_snapshot' => $snapshot['total'],
-                'discount_reason' => $discountReason,
+                'discount_reason' => $needsApproval ? null : $discountReason,
                 'enrolled_at' => now(),
             ]);
+
+            if ($needsApproval) {
+                ApprovalRequest::create([
+                    'organization_id' => $locked->organization_id,
+                    'approvable_type' => $enrollment->getMorphClass(),
+                    'approvable_id' => $enrollment->id,
+                    'type' => 'discount',
+                    'amount' => $requested,
+                    'reason' => $discountReason,
+                    'status' => 'pending',
+                    'requested_by_user_id' => $actingUser?->id,
+                ]);
+            }
+
+            return $enrollment;
         });
+    }
+
+    /**
+     * تطبيق خصم معتمَد على تسجيل قائم — يعيد حساب الـ Snapshot من السعر/الضريبة المخزّنين.
+     * PRD §15: بعد الاعتماد يُطبَّق الخصم.
+     */
+    public function applyApprovedDiscount(Enrollment $enrollment, string $amount, ?string $reason): void
+    {
+        $snapshot = $this->computeSnapshot(
+            (string) $enrollment->price_snapshot,
+            (string) $enrollment->tax_rate_snapshot,
+            $amount,
+        );
+
+        $enrollment->update([
+            'discount_amount_snapshot' => $snapshot['discount'],
+            'tax_amount_snapshot' => $snapshot['tax'],
+            'total_snapshot' => $snapshot['total'],
+            'discount_reason' => $reason,
+            // الخروج من pending_approval إلى المسار الطبيعي (إن لم يكن في قائمة انتظار).
+            'status' => $enrollment->status === 'pending_approval' ? 'pending_invoice' : $enrollment->status,
+        ]);
     }
 
     /**

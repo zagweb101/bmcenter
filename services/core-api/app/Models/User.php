@@ -87,4 +87,19 @@ class User extends Authenticatable
             ->whereHas('permissions', fn ($q) => $q->where('key', $permissionKey))
             ->exists();
     }
+
+    /**
+     * حد الخصم الأقصى للمستخدم عبر أدواره. PRD §15.
+     * null = غير محدود (إن كان لأحد الأدوار حد null).
+     */
+    public function maxDiscountLimit(): ?string
+    {
+        $limits = $this->roles()->pluck('max_discount_amount');
+
+        if ($limits->isEmpty() || $limits->contains(null)) {
+            return null; // غير محدود
+        }
+
+        return (string) $limits->max();
+    }
 }

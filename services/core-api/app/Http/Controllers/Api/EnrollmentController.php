@@ -49,6 +49,7 @@ class EnrollmentController extends Controller
             $person,
             (string) ($data['discount_amount'] ?? '0'),
             $data['discount_reason'] ?? null,
+            $request->user(),
         );
 
         return (new EnrollmentResource($enrollment))->response()->setStatusCode(201);

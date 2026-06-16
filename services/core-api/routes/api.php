@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
 use App\Http\Controllers\Api\ConsentController;
@@ -71,5 +72,12 @@ Route::prefix('v1')->group(function () {
         Route::get('enrollments/{enrollment}', [EnrollmentController::class, 'show'])->middleware('permission:enrollments.view');
         Route::post('enrollments', [EnrollmentController::class, 'store'])->middleware('permission:enrollments.manage');
         Route::patch('enrollments/{enrollment}/cancel', [EnrollmentController::class, 'cancel'])->middleware('permission:enrollments.manage');
+
+        // اعتماد الطلبات (Approvals) — PRD §15
+        Route::middleware('permission:approvals.review')->group(function () {
+            Route::get('approvals', [ApprovalController::class, 'index']);
+            Route::patch('approvals/{approval}/approve', [ApprovalController::class, 'approve']);
+            Route::patch('approvals/{approval}/reject', [ApprovalController::class, 'reject']);
+        });
     });
 });

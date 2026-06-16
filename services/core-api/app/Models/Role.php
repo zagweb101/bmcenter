@@ -15,9 +15,9 @@ class Role extends Model
 {
     use HasFactory, BelongsToOrganization, Auditable;
 
-    protected $fillable = ['organization_id', 'key', 'name_ar', 'name_en', 'is_system'];
+    protected $fillable = ['organization_id', 'key', 'name_ar', 'name_en', 'is_system', 'max_discount_amount'];
 
-    protected $casts = ['is_system' => 'boolean'];
+    protected $casts = ['is_system' => 'boolean', 'max_discount_amount' => 'decimal:2'];
 
     public function permissions(): BelongsToMany
     {
