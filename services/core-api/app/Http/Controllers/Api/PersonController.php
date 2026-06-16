@@ -71,6 +71,25 @@ class PersonController extends Controller
     }
 
     /**
+     * مرشّحو المطابقة الاحتمالية (للمراجعة قبل الإنشاء). PRD §11.
+     */
+    public function matchCandidates(Request $request, PersonMatcher $matcher): JsonResponse
+    {
+        $data = $request->validate([
+            'full_name' => ['nullable', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:32'],
+            'email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        $candidates = $matcher->findProbable($data)->map(fn (Person $p) => [
+            'person' => new PersonResource($p),
+            'match_score' => round((float) $p->match_score, 3),
+        ]);
+
+        return response()->json(['candidates' => $candidates]);
+    }
+
+    /**
      * Activity Timeline — سجل تدقيق الشخص. PRD §8.1 (gated audit.view).
      */
     public function activity(Person $person): AnonymousResourceCollection

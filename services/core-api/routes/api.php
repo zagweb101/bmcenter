@@ -29,6 +29,8 @@ Route::prefix('v1')->group(function () {
         // الأشخاص (Person 360)
         Route::get('persons', [PersonController::class, 'index'])
             ->middleware('permission:persons.view');
+        Route::post('persons/match', [PersonController::class, 'matchCandidates'])
+            ->middleware('permission:persons.view');
         Route::get('persons/{person}', [PersonController::class, 'show'])
             ->middleware('permission:persons.view');
         Route::post('persons', [PersonController::class, 'store'])
