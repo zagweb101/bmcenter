@@ -30,13 +30,14 @@ class PaymentService
             }
 
             $payment = Payment::create([
-                'organization_id' => app(\App\Support\Tenancy\Tenancy::class)->id(),
+                'organization_id' => $data['organization_id'] ?? app(\App\Support\Tenancy\Tenancy::class)->id(),
                 'person_id' => $data['person_id'] ?? null,
                 'method' => $data['method'],
                 'amount' => $amount,
                 'currency' => 'SAR',
                 'status' => 'confirmed',
                 'reference' => $data['reference'] ?? null,
+                'gateway_txn_ref' => $data['gateway_txn_ref'] ?? null,
                 'paid_at' => now(),
             ]);
 

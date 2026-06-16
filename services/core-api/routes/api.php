@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PaymentIntentController;
+use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PrivacyRequestController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +25,9 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // عام
     Route::post('auth/login', [AuthController::class, 'login']);
+
+    // Webhook الدفع — عام، موقّع HMAC + Idempotent (ADR-005، PRD §18)
+    Route::post('webhooks/payments/{provider}', [PaymentWebhookController::class, 'handle']);
 
     // محمي: مصادقة (سياق المؤسسة يُضبط مبكرًا عبر SetTenant في مجموعة api)
     Route::middleware('auth:sanctum')->group(function () {
@@ -95,6 +100,7 @@ Route::prefix('v1')->group(function () {
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->middleware('permission:payments.view');
         Route::post('payments', [PaymentController::class, 'store'])->middleware('permission:payments.manage');
         Route::post('payments/{payment}/refund', [PaymentController::class, 'refund'])->middleware('permission:payments.manage');
+        Route::post('payment-intents', [PaymentIntentController::class, 'store'])->middleware('permission:payments.manage');
 
         // تقارير التحصيل والإقفال اليومي — PRD §8.3
         Route::get('reports/daily-collection', [CollectionController::class, 'dailyReport'])->middleware('permission:payments.view');
