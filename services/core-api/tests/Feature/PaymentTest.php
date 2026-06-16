@@ -45,12 +45,14 @@ class PaymentTest extends TestCase
         Sanctum::actingAs($user);
         [$invoiceId, $enrollmentId, $total] = $this->invoiceFor($org); // 1150.00
 
-        $this->postJson('/api/v1/payments', [
+        $response = $this->postJson('/api/v1/payments', [
             'method' => 'cash', 'amount' => $total,
             'allocations' => [['invoice_id' => $invoiceId, 'amount' => $total]],
         ])->assertCreated()
-          ->assertJsonPath('data.receipt.amount', $total)
-          ->assertJsonPath('data.receipt.receipt_number', 'REC-000001');
+          ->assertJsonPath('data.receipt.amount', $total);
+
+        // كل دفعة تُنتج سندًا برقم بصيغة REC-NNNNNN (§27)
+        $this->assertMatchesRegularExpression('/^REC-\d{6}$/', $response->json('data.receipt.receipt_number'));
 
         $this->getJson("/api/v1/invoices/{$invoiceId}/balance")
             ->assertOk()->assertJsonPath('outstanding', '0.00');

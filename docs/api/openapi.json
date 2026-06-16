@@ -646,6 +646,228 @@
                 }
             }
         },
+        "/v1/reports/daily-collection": {
+            "get": {
+                "operationId": "collection.dailyReport",
+                "tags": [
+                    "Collection"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "date": {
+                                            "type": "string"
+                                        },
+                                        "totals_by_method": {
+                                            "type": "string"
+                                        },
+                                        "total_amount": {
+                                            "type": "string"
+                                        },
+                                        "payments_count": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "date",
+                                        "totals_by_method",
+                                        "total_amount",
+                                        "payments_count"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/cash-closings": {
+            "get": {
+                "operationId": "collection.index",
+                "tags": [
+                    "Collection"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer",
+                                            "minimum": 1
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CashClosing"
+                                            }
+                                        },
+                                        "first_page_url": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "from": {
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ],
+                                            "minimum": 1
+                                        },
+                                        "last_page_url": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "minimum": 1
+                                        },
+                                        "links": {
+                                            "type": "array",
+                                            "description": "Generated paginator links.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "url": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "label": {
+                                                        "type": "string"
+                                                    },
+                                                    "active": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "url",
+                                                    "label",
+                                                    "active"
+                                                ]
+                                            }
+                                        },
+                                        "next_page_url": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "path": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ],
+                                            "description": "Base path for paginator generated URLs."
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "description": "Number of items shown per page.",
+                                            "minimum": 0
+                                        },
+                                        "prev_page_url": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "to": {
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ],
+                                            "description": "Number of the last item in the slice.",
+                                            "minimum": 1
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "description": "Total number of items being paginated.",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "required": [
+                                        "current_page",
+                                        "data",
+                                        "first_page_url",
+                                        "from",
+                                        "last_page_url",
+                                        "last_page",
+                                        "links",
+                                        "next_page_url",
+                                        "path",
+                                        "per_page",
+                                        "prev_page_url",
+                                        "to",
+                                        "total"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "collection.close",
+                "summary": "\u0625\u0642\u0641\u0627\u0644 \u064a\u0648\u0645 \u2014 \u064a\u062d\u0641\u0638 \u0644\u0642\u0637\u0629 \u0627\u0644\u0645\u062d\u0635\u0651\u0644\u0627\u062a \u0648\u064a\u0645\u0646\u0639 \u0625\u0639\u0627\u062f\u0629 \u0627\u0644\u0625\u0642\u0641\u0627\u0644. PRD \u00a78.3",
+                "tags": [
+                    "Collection"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "date": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "date-time"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CashClosing"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/v1/persons/{person}/consents": {
             "get": {
                 "operationId": "consent.index",
@@ -3764,6 +3986,74 @@
                     "created_at"
                 ],
                 "title": "AuditLogResource"
+            },
+            "CashClosing": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "organization_id": {
+                        "type": "integer"
+                    },
+                    "closing_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "totals_by_method": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "total_amount": {
+                        "type": "string"
+                    },
+                    "payments_count": {
+                        "type": "integer"
+                    },
+                    "closed_by_user_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "closed_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "organization_id",
+                    "closing_date",
+                    "totals_by_method",
+                    "total_amount",
+                    "payments_count",
+                    "closed_by_user_id",
+                    "closed_at",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "CashClosing"
             },
             "CohortResource": {
                 "type": "object",

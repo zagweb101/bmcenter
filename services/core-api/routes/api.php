@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CohortController;
+use App\Http\Controllers\Api\CollectionController;
 use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
@@ -92,6 +93,11 @@ Route::prefix('v1')->group(function () {
         Route::get('payments', [PaymentController::class, 'index'])->middleware('permission:payments.view');
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->middleware('permission:payments.view');
         Route::post('payments', [PaymentController::class, 'store'])->middleware('permission:payments.manage');
+
+        // تقارير التحصيل والإقفال اليومي — PRD §8.3
+        Route::get('reports/daily-collection', [CollectionController::class, 'dailyReport'])->middleware('permission:payments.view');
+        Route::get('cash-closings', [CollectionController::class, 'index'])->middleware('permission:payments.view');
+        Route::post('cash-closings', [CollectionController::class, 'close'])->middleware('permission:payments.manage');
 
         // اعتماد الطلبات (Approvals) — PRD §15
         Route::middleware('permission:approvals.review')->group(function () {
