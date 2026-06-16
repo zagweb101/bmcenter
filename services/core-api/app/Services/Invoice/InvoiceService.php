@@ -15,6 +15,67 @@ use Illuminate\Validation\ValidationException;
  */
 class InvoiceService
 {
+    /**
+     * إصدار فاتورة (Draft → Issued). PRD §16.5.
+     * بعد الإصدار تُجمَّد المبالغ ويُمنع الحذف (يُفرض في النموذج).
+     * (الإصدار المتوافق مع ZATCA — التخليص/الإبلاغ — يُضاف لاحقًا في 0C.)
+     */
+    public function issue(Invoice $invoice): Invoice
+    {
+        if ($invoice->status !== 'draft') {
+            throw ValidationException::withMessages([
+                'status' => ['لا يمكن إصدار الفاتورة من حالتها الحالية.'],
+            ]);
+        }
+
+        $invoice->update(['status' => 'issued', 'issued_at' => now()]);
+
+        return $invoice;
+    }
+
+    /**
+     * إنشاء إشعار دائن/مدين لتصحيح فاتورة صادرة. PRD §16.1, §17.
+     */
+    public function createNote(Invoice $original, string $type, string $amount, ?string $reason): Invoice
+    {
+        if (! $original->isIssuedManual()) {
+            throw ValidationException::withMessages([
+                'invoice' => ['لا يمكن إنشاء إشعار إلا لفاتورة صادرة.'],
+            ]);
+        }
+        if (! in_array($type, ['credit', 'debit'], true)) {
+            throw ValidationException::withMessages(['type' => ['نوع الإشعار غير صالح.']]);
+        }
+        $amount = bcadd($amount, '0', 2);
+        if (bccomp($amount, '0', 2) !== 1) {
+            throw ValidationException::withMessages(['amount' => ['المبلغ يجب أن يكون موجبًا.']]);
+        }
+
+        $note = Invoice::create([
+            'organization_id' => $original->organization_id,
+            'branch_id' => $original->branch_id,
+            'buyer_person_id' => $original->buyer_person_id,
+            'enrollment_id' => $original->enrollment_id,
+            'invoice_type_code' => $type === 'credit' ? '381' : '383',
+            'transaction_type' => $original->transaction_type,
+            'original_invoice_id' => $original->id,
+            'currency' => $original->currency,
+            'buyer_snapshot' => $original->buyer_snapshot,
+            'subtotal' => $amount,
+            'discount_total' => '0',
+            'tax_total' => '0',
+            'total_including_tax' => $amount,
+            'tax_breakdown' => null,
+            'status' => 'issued',
+            'issued_at' => now(),
+        ]);
+
+        $prefix = $type === 'credit' ? 'CN-' : 'DN-';
+        $note->update(['document_number' => $prefix . str_pad((string) $note->id, 6, '0', STR_PAD_LEFT)]);
+
+        return $note;
+    }
+
     public function createDraftFromEnrollment(Enrollment $enrollment): Invoice
     {
         return DB::transaction(function () use ($enrollment) {

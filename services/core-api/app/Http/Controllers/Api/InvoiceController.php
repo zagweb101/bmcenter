@@ -54,4 +54,40 @@ class InvoiceController extends Controller
 
         return (new InvoiceResource($invoice))->response()->setStatusCode(201);
     }
+
+    /**
+     * إصدار الفاتورة (Draft → Issued). PRD §16.5.
+     */
+    public function issue(Invoice $invoice, InvoiceService $service): InvoiceResource
+    {
+        return new InvoiceResource($service->issue($invoice));
+    }
+
+    /**
+     * إشعار دائن. PRD §16.1, §17.
+     */
+    public function creditNote(Request $request, Invoice $invoice, InvoiceService $service): JsonResponse
+    {
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+        $note = $service->createNote($invoice, 'credit', (string) $data['amount'], $data['reason'] ?? null);
+
+        return (new InvoiceResource($note))->response()->setStatusCode(201);
+    }
+
+    /**
+     * إشعار مدين. PRD §16.1, §17.
+     */
+    public function debitNote(Request $request, Invoice $invoice, InvoiceService $service): JsonResponse
+    {
+        $data = $request->validate([
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+        $note = $service->createNote($invoice, 'debit', (string) $data['amount'], $data['reason'] ?? null);
+
+        return (new InvoiceResource($note))->response()->setStatusCode(201);
+    }
 }

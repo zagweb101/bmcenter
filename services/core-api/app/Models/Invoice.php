@@ -43,11 +43,43 @@ class Invoice extends Model
         'total_including_tax' => 'decimal:2',
     ];
 
+    /** الحقول المالية التي تُجمَّد بعد الإصدار (PRD §17). */
+    public const FROZEN_FIELDS = [
+        'subtotal', 'discount_total', 'tax_total', 'total_including_tax',
+        'tax_breakdown', 'buyer_person_id', 'enrollment_id',
+    ];
+
     protected static function booted(): void
     {
         static::creating(function (Invoice $invoice) {
             $invoice->uuid ??= (string) Str::uuid();
         });
+
+        // PRD §17, §27: لا تعديل للمبالغ بعد الإصدار؛ التصحيح عبر إشعار.
+        static::updating(function (Invoice $invoice) {
+            $wasIssued = in_array($invoice->getOriginal('status'), self::ISSUED_STATES, true)
+                || $invoice->getOriginal('status') === 'issued';
+            if (! $wasIssued) {
+                return;
+            }
+            foreach (self::FROZEN_FIELDS as $field) {
+                if ($invoice->isDirty($field)) {
+                    throw new \DomainException('لا يجوز تعديل مبالغ فاتورة صادرة؛ استخدم إشعارًا دائنًا/مدينًا.');
+                }
+            }
+        });
+
+        // PRD §17: لا حذف لفاتورة صادرة.
+        static::deleting(function (Invoice $invoice) {
+            if ($invoice->isIssued() || $invoice->status === 'issued') {
+                throw new \DomainException('لا يجوز حذف فاتورة صادرة.');
+            }
+        });
+    }
+
+    public function isIssuedManual(): bool
+    {
+        return $this->status === 'issued' || $this->isIssued();
     }
 
     public function lines(): HasMany
