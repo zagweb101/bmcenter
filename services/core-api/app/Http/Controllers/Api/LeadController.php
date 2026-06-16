@@ -25,6 +25,13 @@ use Illuminate\Validation\ValidationException;
  */
 class LeadController extends Controller
 {
+    public function sources(): JsonResponse
+    {
+        return response()->json([
+            'data' => LeadSource::where('is_active', true)->get(['id', 'key', 'name_ar']),
+        ]);
+    }
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Lead::query()->latest();

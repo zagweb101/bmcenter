@@ -2232,6 +2232,40 @@
                 }
             }
         },
+        "/v1/lead-sources": {
+            "get": {
+                "operationId": "lead.sources",
+                "tags": [
+                    "Lead"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/LeadSource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/v1/leads": {
             "get": {
                 "operationId": "lead.index",
@@ -4700,6 +4734,50 @@
                     "created_at"
                 ],
                 "title": "LeadResource"
+            },
+            "LeadSource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "organization_id": {
+                        "type": "integer"
+                    },
+                    "key": {
+                        "type": "string"
+                    },
+                    "name_ar": {
+                        "type": "string"
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "id",
+                    "organization_id",
+                    "key",
+                    "name_ar",
+                    "is_active",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "LeadSource"
             },
             "LoginRequest": {
                 "type": "object",

@@ -64,6 +64,7 @@ Route::prefix('v1')->group(function () {
         });
 
         // العملاء المحتملون (Leads / CRM) — PRD §13
+        Route::get('lead-sources', [LeadController::class, 'sources'])->middleware('permission:leads.view');
         Route::get('leads', [LeadController::class, 'index'])->middleware('permission:leads.view');
         Route::get('leads/{lead}', [LeadController::class, 'show'])->middleware('permission:leads.view');
         Route::post('leads', [LeadController::class, 'store'])->middleware('permission:leads.manage');

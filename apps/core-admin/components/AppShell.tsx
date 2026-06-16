@@ -6,6 +6,7 @@ import Link from "next/link";
 import { clearToken, getToken } from "@/lib/api";
 
 const NAV = [
+  { href: "/leads", label: "العملاء المحتملون" },
   { href: "/persons", label: "الأشخاص" },
   { href: "/consents", label: "الموافقات" },
   { href: "/privacy-requests", label: "طلبات الخصوصية" },

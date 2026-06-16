@@ -1,0 +1,104 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: bayt-almoswer-db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_DATABASE:-bayt_almoswer}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bayt-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: bayt-almoswer-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bayt-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Laravel API
+  api:
+    build:
+      context: ./services/core-api
+      dockerfile: Dockerfile
+    container_name: bayt-almoswer-api
+    environment:
+      APP_NAME: "Bayt Almoswer"
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      QUEUE_CONNECTION: redis
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: cookie
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-bayt_almoswer}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./services/core-api:/app
+      - /app/vendor
+      - /app/node_modules
+    networks:
+      - bayt-network
+    command: sh -c "composer install && php artisan migrate --force && php artisan serve --host=0.0.0.0"
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./apps/core-admin
+      dockerfile: Dockerfile
+    container_name: bayt-almoswer-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./apps/core-admin:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - bayt-network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  bayt-network:
+    driver: bridge
