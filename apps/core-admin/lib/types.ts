@@ -80,3 +80,34 @@ export const LEAD_STAGE_LABELS: Record<string, string> = {
   nurturing: "رعاية",
   lost: "مفقود",
 };
+
+export interface Invoice {
+  id: number;
+  document_number: string | null;
+  enrollment_id: number | null;
+  invoice_type_code: string | null;
+  transaction_type: string | null;
+  currency: string;
+  subtotal: string;
+  tax_total: string;
+  total_including_tax: string;
+  status: string;
+  issued_at: string | null;
+  created_at: string | null;
+}
+
+export interface InvoiceBalance {
+  invoice_id: number;
+  total_including_tax: string;
+  allocated: string;
+  outstanding: string;
+}
+
+export const INVOICE_STATUS_LABELS: Record<string, string> = {
+  draft: "مسودة",
+  issued: "صادرة",
+  reported: "مُبلَّغة (ZATCA)",
+  cleared: "مخلَّصة (ZATCA)",
+  rejected: "مرفوضة",
+  archived: "مؤرشفة",
+};
