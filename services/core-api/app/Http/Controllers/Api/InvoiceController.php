@@ -64,6 +64,14 @@ class InvoiceController extends Controller
     }
 
     /**
+     * إرسال إلى ZATCA (تخليص/إبلاغ). PRD §16.
+     */
+    public function submitToZatca(Invoice $invoice, InvoiceService $service): InvoiceResource
+    {
+        return new InvoiceResource($service->submitToZatca($invoice));
+    }
+
+    /**
      * إشعار دائن. PRD §16.1, §17.
      */
     public function creditNote(Request $request, Invoice $invoice, InvoiceService $service): JsonResponse

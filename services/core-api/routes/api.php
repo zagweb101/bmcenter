@@ -86,6 +86,7 @@ Route::prefix('v1')->group(function () {
         Route::get('invoices/{invoice}/balance', [InvoiceController::class, 'balance'])->middleware('permission:invoices.view');
         Route::post('enrollments/{enrollment}/invoice', [InvoiceController::class, 'storeFromEnrollment'])->middleware('permission:invoices.issue');
         Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->middleware('permission:invoices.issue');
+        Route::post('invoices/{invoice}/submit-zatca', [InvoiceController::class, 'submitToZatca'])->middleware('permission:invoices.issue');
         Route::post('invoices/{invoice}/credit-note', [InvoiceController::class, 'creditNote'])->middleware('permission:invoices.issue');
         Route::post('invoices/{invoice}/debit-note', [InvoiceController::class, 'debitNote'])->middleware('permission:invoices.issue');
 

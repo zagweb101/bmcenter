@@ -4,6 +4,7 @@ namespace App\Services\Invoice;
 
 use App\Models\Enrollment;
 use App\Models\Invoice;
+use App\Services\Compliance\Zatca\Contracts\ZatcaClient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -31,6 +32,49 @@ class InvoiceService
         $invoice->update(['status' => 'issued', 'issued_at' => now()]);
 
         return $invoice;
+    }
+
+    /**
+     * إرسال فاتورة صادرة إلى ZATCA (تخليص/إبلاغ) عبر الـ Adapter. PRD §16.
+     * في وضع simulation تعمل كاملة؛ في production تتطلب الربط الفعلي.
+     */
+    public function submitToZatca(Invoice $invoice): Invoice
+    {
+        if ($invoice->status !== 'issued') {
+            throw ValidationException::withMessages([
+                'status' => ['يجب إصدار الفاتورة قبل إرسالها إلى ZATCA.'],
+            ]);
+        }
+
+        return DB::transaction(function () use ($invoice) {
+            $result = app(ZatcaClient::class)->submit($invoice);
+
+            if (! $result->ok()) {
+                $invoice->update([
+                    'status' => 'rejected',
+                    'submission_errors' => $result->errors,
+                    'submission_warnings' => $result->warnings,
+                ]);
+
+                throw ValidationException::withMessages([
+                    'zatca' => $result->errors ?: ['رُفضت الفاتورة من ZATCA.'],
+                ]);
+            }
+
+            $invoice->update([
+                'status' => $result->status, // cleared | reported
+                'icv' => $result->icv,
+                'pih' => $result->pih,
+                'invoice_hash' => $result->invoiceHash,
+                'qr_payload' => $result->qrPayload,
+                'cryptographic_stamp' => $result->cryptographicStamp,
+                'cleared_xml' => $result->clearedXml,
+                'submission_warnings' => $result->warnings,
+                'submission_errors' => null,
+            ]);
+
+            return $invoice;
+        });
     }
 
     /**

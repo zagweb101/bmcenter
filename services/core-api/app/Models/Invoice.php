@@ -28,6 +28,9 @@ class Invoice extends Model
         'original_invoice_id', 'seller_snapshot', 'buyer_snapshot', 'currency',
         'issued_at', 'subtotal', 'discount_total', 'tax_total',
         'total_including_tax', 'tax_breakdown', 'status',
+        // حقول ZATCA (تُملأ عبر الـ Adapter) — PRD §16.3
+        'icv', 'pih', 'invoice_hash', 'qr_payload', 'cryptographic_stamp',
+        'cleared_xml', 'submission_warnings', 'submission_errors',
     ];
 
     protected $casts = [

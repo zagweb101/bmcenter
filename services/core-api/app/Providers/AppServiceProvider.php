@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Services\Audit\AuditLogger;
+use App\Services\Compliance\Zatca\Contracts\ZatcaClient;
+use App\Services\Compliance\Zatca\ProductionZatcaClient;
+use App\Services\Compliance\Zatca\SimulationZatcaClient;
 use App\Support\Tenancy\Tenancy;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +21,13 @@ class AppServiceProvider extends ServiceProvider
 
         // خدمة سجل التدقيق (PRD §6, §22)
         $this->app->singleton(AuditLogger::class);
+
+        // عميل ZATCA حسب الإعداد (ADR-004) — simulation الآن، production عند الربط
+        $this->app->bind(ZatcaClient::class, function () {
+            return config('zatca.driver') === 'production'
+                ? new ProductionZatcaClient()
+                : new SimulationZatcaClient();
+        });
     }
 
     /**
