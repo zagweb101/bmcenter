@@ -8,6 +8,7 @@ import { clearToken, getToken } from "@/lib/api";
 const NAV = [
   { href: "/leads", label: "العملاء المحتملون" },
   { href: "/persons", label: "الأشخاص" },
+  { href: "/enrollment", label: "الدورات والتسجيل" },
   { href: "/invoices", label: "الفواتير" },
   { href: "/consents", label: "الموافقات" },
   { href: "/privacy-requests", label: "طلبات الخصوصية" },

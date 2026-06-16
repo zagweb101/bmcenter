@@ -111,3 +111,33 @@ export const INVOICE_STATUS_LABELS: Record<string, string> = {
   rejected: "مرفوضة",
   archived: "مؤرشفة",
 };
+
+export interface Course {
+  id: number;
+  code: string | null;
+  name_ar: string;
+  default_price: string;
+  is_active: boolean;
+}
+
+export interface Cohort {
+  id: number;
+  course_id: number;
+  name: string;
+  capacity: number;
+  price: string;
+  tax_rate: string;
+  status: string;
+  starts_on: string | null;
+  ends_on: string | null;
+  seats_taken?: number;
+}
+
+export interface Enrollment {
+  id: number;
+  cohort_id: number;
+  person_id: number;
+  status: string;
+  total_snapshot: string;
+  discount_amount_snapshot: string;
+}
