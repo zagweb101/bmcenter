@@ -97,6 +97,68 @@ class EnrollmentService
     }
 
     /**
+     * نقل تسجيل إلى مجموعة أخرى. PRD §14.
+     * يحرّر مقعد المجموعة القديمة (status=transferred) ويُنشئ تسجيلًا في الهدف
+     * مع فحص سعة الهدف وإعادة حساب الـ Snapshot على سعر/ضريبة الهدف (مع حمل الخصم).
+     */
+    public function transfer(Enrollment $enrollment, Cohort $target): Enrollment
+    {
+        if (in_array($enrollment->status, ['transferred', 'cancelled', 'completed'], true)) {
+            throw ValidationException::withMessages([
+                'enrollment' => ['لا يمكن نقل تسجيل بحالته الحالية.'],
+            ]);
+        }
+        if ($enrollment->cohort_id === $target->id) {
+            throw ValidationException::withMessages([
+                'cohort_id' => ['الطالب مسجَّل في هذه المجموعة بالفعل.'],
+            ]);
+        }
+
+        return DB::transaction(function () use ($enrollment, $target) {
+            $lockedTarget = Cohort::whereKey($target->getKey())->lockForUpdate()->firstOrFail();
+
+            $duplicate = Enrollment::where('cohort_id', $lockedTarget->id)
+                ->where('person_id', $enrollment->person_id)
+                ->whereNull('deleted_at')
+                ->exists();
+            if ($duplicate) {
+                throw ValidationException::withMessages([
+                    'person_id' => ['الطالب مسجَّل في المجموعة الهدف بالفعل.'],
+                ]);
+            }
+
+            $occupied = Enrollment::where('cohort_id', $lockedTarget->id)
+                ->whereIn('status', Enrollment::SEAT_OCCUPYING)
+                ->count();
+            $hasSeat = $lockedTarget->capacity === 0 || $occupied < $lockedTarget->capacity;
+
+            // إعادة الحساب على سعر/ضريبة الهدف مع حمل الخصم المعتمَد سابقًا.
+            $snapshot = $this->computeSnapshot(
+                (string) $lockedTarget->price,
+                (string) $lockedTarget->tax_rate,
+                (string) $enrollment->discount_amount_snapshot,
+            );
+
+            // تحرير المقعد القديم.
+            $enrollment->update(['status' => 'transferred']);
+
+            return Enrollment::create([
+                'organization_id' => $lockedTarget->organization_id,
+                'cohort_id' => $lockedTarget->id,
+                'person_id' => $enrollment->person_id,
+                'status' => $hasSeat ? 'pending_invoice' : 'waitlisted',
+                'price_snapshot' => $snapshot['price'],
+                'tax_rate_snapshot' => $snapshot['tax_rate'],
+                'discount_amount_snapshot' => $snapshot['discount'],
+                'tax_amount_snapshot' => $snapshot['tax'],
+                'total_snapshot' => $snapshot['total'],
+                'discount_reason' => $enrollment->discount_reason,
+                'enrolled_at' => now(),
+            ]);
+        });
+    }
+
+    /**
      * تطبيق خصم معتمَد على تسجيل قائم — يعيد حساب الـ Snapshot من السعر/الضريبة المخزّنين.
      * PRD §15: بعد الاعتماد يُطبَّق الخصم.
      */

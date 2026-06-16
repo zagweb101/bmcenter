@@ -69,4 +69,23 @@ class EnrollmentController extends Controller
 
         return new EnrollmentResource($enrollment);
     }
+
+    /**
+     * نقل التسجيل إلى مجموعة أخرى. PRD §14.
+     */
+    public function transfer(Request $request, Enrollment $enrollment, EnrollmentService $service): JsonResponse
+    {
+        $data = $request->validate(['cohort_id' => ['required', 'integer']]);
+
+        $target = Cohort::find($data['cohort_id']);
+        if (! $target) {
+            throw ValidationException::withMessages([
+                'cohort_id' => ['المجموعة الهدف غير صالحة ضمن المؤسسة.'],
+            ]);
+        }
+
+        $new = $service->transfer($enrollment, $target);
+
+        return (new EnrollmentResource($new))->response()->setStatusCode(201);
+    }
 }
