@@ -41,6 +41,10 @@ class FoundationSeeder extends Seeder
             ['key' => 'audit.view',       'name_ar' => 'عرض سجل التدقيق',    'group' => 'compliance'],
             ['key' => 'invoices.view',    'name_ar' => 'عرض الفواتير',       'group' => 'finance'],
             ['key' => 'invoices.issue',   'name_ar' => 'إصدار الفواتير',     'group' => 'finance'],
+            // CRM / Leads (PRD §13)
+            ['key' => 'leads.view',       'name_ar' => 'عرض العملاء المحتملين', 'group' => 'crm'],
+            ['key' => 'leads.manage',     'name_ar' => 'إدارة العملاء المحتملين', 'group' => 'crm'],
+            ['key' => 'leads.assign',     'name_ar' => 'إسناد العملاء المحتملين', 'group' => 'crm'],
         ];
 
         foreach ($permissions as $p) {
@@ -50,9 +54,9 @@ class FoundationSeeder extends Seeder
         // الأدوار السبعة (PRD §10) مع صلاحياتها الأولية
         $roles = [
             'super_admin'         => ['ar' => 'مدير النظام',          'perms' => '*'],
-            'executive_manager'   => ['ar' => 'المدير التنفيذي',      'perms' => ['persons.view', 'users.manage', 'settings.manage', 'audit.view', 'invoices.view']],
-            'branch_manager'      => ['ar' => 'مدير الفرع',           'perms' => ['persons.view', 'persons.manage', 'invoices.view']],
-            'crm_agent'           => ['ar' => 'موظف علاقات العملاء',  'perms' => ['persons.view', 'persons.manage', 'consents.manage']],
+            'executive_manager'   => ['ar' => 'المدير التنفيذي',      'perms' => ['persons.view', 'users.manage', 'settings.manage', 'audit.view', 'invoices.view', 'leads.view']],
+            'branch_manager'      => ['ar' => 'مدير الفرع',           'perms' => ['persons.view', 'persons.manage', 'invoices.view', 'leads.view', 'leads.manage', 'leads.assign']],
+            'crm_agent'           => ['ar' => 'موظف علاقات العملاء',  'perms' => ['persons.view', 'persons.manage', 'consents.manage', 'leads.view', 'leads.manage']],
             'registration_officer'=> ['ar' => 'موظف التسجيل',         'perms' => ['persons.view', 'persons.manage']],
             'accountant'          => ['ar' => 'المحاسب',              'perms' => ['invoices.view', 'invoices.issue']],
             'compliance_reviewer' => ['ar' => 'مراجع الامتثال',       'perms' => ['audit.view', 'privacy.handle', 'consents.manage', 'persons.viewSensitive']],
@@ -71,6 +75,21 @@ class FoundationSeeder extends Seeder
                 : $allPermissionIds->only($def['perms'])->values()->all();
 
             $role->permissions()->sync($ids);
+        }
+
+        // مصادر Leads الافتراضية (PRD §13)
+        $sources = [
+            'landing_form' => 'نموذج التقاط',
+            'crm_manual' => 'إدخال يدوي',
+            'referral' => 'ترشيح',
+            'social' => 'وسائل التواصل',
+            'walk_in' => 'زيارة',
+        ];
+        foreach ($sources as $key => $nameAr) {
+            \App\Models\LeadSource::firstOrCreate(
+                ['organization_id' => $org->id, 'key' => $key],
+                ['name_ar' => $nameAr, 'is_active' => true],
+            );
         }
     }
 }

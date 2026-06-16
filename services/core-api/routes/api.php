@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ConsentController;
+use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\PersonController;
 use App\Http\Controllers\Api\PrivacyRequestController;
 use Illuminate\Support\Facades\Route;
@@ -47,5 +48,13 @@ Route::prefix('v1')->group(function () {
             Route::get('privacy-requests/{privacyRequest}', [PrivacyRequestController::class, 'show']);
             Route::patch('privacy-requests/{privacyRequest}', [PrivacyRequestController::class, 'update']);
         });
+
+        // العملاء المحتملون (Leads / CRM) — PRD §13
+        Route::get('leads', [LeadController::class, 'index'])->middleware('permission:leads.view');
+        Route::get('leads/{lead}', [LeadController::class, 'show'])->middleware('permission:leads.view');
+        Route::post('leads', [LeadController::class, 'store'])->middleware('permission:leads.manage');
+        Route::patch('leads/{lead}/transition', [LeadController::class, 'transition'])->middleware('permission:leads.manage');
+        Route::post('leads/{lead}/interactions', [LeadController::class, 'addInteraction'])->middleware('permission:leads.manage');
+        Route::patch('leads/{lead}/assign', [LeadController::class, 'assign'])->middleware('permission:leads.assign');
     });
 });
