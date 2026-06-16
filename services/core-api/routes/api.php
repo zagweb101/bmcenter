@@ -93,6 +93,7 @@ Route::prefix('v1')->group(function () {
         Route::get('payments', [PaymentController::class, 'index'])->middleware('permission:payments.view');
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->middleware('permission:payments.view');
         Route::post('payments', [PaymentController::class, 'store'])->middleware('permission:payments.manage');
+        Route::post('payments/{payment}/refund', [PaymentController::class, 'refund'])->middleware('permission:payments.manage');
 
         // تقارير التحصيل والإقفال اليومي — PRD §8.3
         Route::get('reports/daily-collection', [CollectionController::class, 'dailyReport'])->middleware('permission:payments.view');
